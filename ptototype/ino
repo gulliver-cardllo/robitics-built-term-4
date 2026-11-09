@@ -1,0 +1,128 @@
+#include <QTRSensors.h>
+QTRSensors qtrD;
+QTRSensors qtr;
+const uint8_t SensorCount = 3;
+uint16_t sensorValues[SensorCount];
+int frequency = 0;
+
+const int In1 = 13;
+const int In3 = 5;
+const int S0 = A4;
+const int S1 = A5 ;
+const int S2 = A2;
+const int S3 = A1;
+const int sensorOut = A4;
+const int OE = A0 ;
+
+void setup() {
+  pinMode(In1, OUTPUT);
+  pinMode(In3, OUTPUT);
+
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+
+  pinMode(sensorOut, INPUT);
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+
+
+  qtr.setTypeRC();
+  qtr.setSensorPins((const uint8_t[]){4, 3, 2}, SensorCount);
+  Serial.begin(9600);
+  Serial.print("Goon ");
+
+    
+  for (uint16_t i = 0; i < 400; i++){
+    qtrD.calibrate();
+    Serial.print("Calibrated: ");
+    Serial.println(i);
+  }
+  
+
+
+
+ 
+
+}
+
+void colour() {
+  // Red Colour Code
+  Serial.print("R= ");      
+  Serial.print(frequency); 
+  Serial.print("  ");
+  delay(100);
+  // Green Colour Code
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  frequency = pulseIn(sensorOut, LOW);
+  Serial.print("G= ");      
+  Serial.print(frequency);  
+  Serial.print("  ");
+  delay(100);
+  // Blue Colour Code
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  frequency = pulseIn(sensorOut, LOW);
+  Serial.print("B= ");      
+  Serial.print(frequency);  
+  Serial.println("  ");
+  delay(1000);
+}
+
+void loop() {
+  
+  stayontheline();
+    uint16_t position = qtr.readLineBlack(sensorValues);
+    qtr.read(sensorValues);
+    for (uint8_t i = 0; i < SensorCount; i++) {
+      Serial.print(sensorValues[i]);
+      Serial.println('\t');
+    }
+    Serial.print("Postion: ");
+    Serial.println(position);
+    Serial.println();
+    delay(1000);
+
+
+    
+  
+
+}
+void stayontheline(){
+  uint16_t position = qtr.readLineBlack(sensorValues);
+  if (position > 500 && position < 1000){
+    digitalWrite(In1, HIGH);  
+    digitalWrite(In3, LOW);
+    delay(20);
+    digitalWrite(In1, LOW);
+    digitalWrite(In3, LOW);
+  }
+
+  if (position < 500){
+    digitalWrite(In1, LOW);  
+    digitalWrite(In3, HIGH);
+    delay(20);
+    digitalWrite(In1, LOW);
+    digitalWrite(In3, LOW);
+  }
+  if (position > 1100){
+
+    digitalWrite(In1, HIGH);
+    digitalWrite(In3, HIGH);
+    Serial.println(position);
+    digitalWrite(In1, LOW);
+    digitalWrite(In3, LOW);
+  }
+
+}
+void sensorfunc() {
+
+  // this code can be updated to use the built in location function in qtr
+  uint16_t position = qtr.readLineBlack(sensorValues);
+  Serial.print("Position: ");
+  Serial.println(position);
+  delay(500);
+  
+}
