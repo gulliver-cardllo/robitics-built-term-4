@@ -1,6 +1,6 @@
 
-#define SS_PIN 12  
-#define RST_PIN 8
+#define SS_PIN 10  
+#define RST_PIN 9
 #include <SPI.h>      
 #include <MFRC522.h>
 #include <QTRSensors.h>
@@ -14,7 +14,7 @@ int frequency = 0;
 int block=2;  
 byte blockcontent[16] = {"Test-RFID"};
 byte readbackblock[18];
-const int In1 = 13;
+const int In1 = 8;
 const int In3 = 5;
 const int S0 = A4;
 const int S1 = A5 ;
@@ -42,14 +42,15 @@ void setup() {
   qtr.setTypeRC();
   qtr.setSensorPins((const uint8_t[]){4, 3, 2}, SensorCount);
   Serial.begin(9600);
-  Serial.print("Goon ");
+  Serial.print("Test ");
 
     
-  for (uint16_t i = 0; i < 400; i++){
-    qtrD.calibrate();
-    Serial.print("Calibrated: ");
-    Serial.println(i);
-  }
+//  for (uint16_t i = 0; i < 400; i++){
+  //  qtrD.calibrate();
+   // Serial.print("Calibrated: ");
+   // Serial.println(i);
+  
+ // }
   
     Serial.begin(9600);        // Initialize serial communications with the PC
     SPI.begin();               // Init SPI bus
@@ -119,7 +120,7 @@ void loop() {
 if ( ! mfrc522.PICC_IsNewCardPresent()) {
 
     return;
-    Serial.println("No Card Presented");
+
   }
 
 
@@ -146,13 +147,13 @@ if ( ! mfrc522.PICC_IsNewCardPresent()) {
 
    //read the block back
 
-   //readBlock(block, readbackblock);
+   readBlock(block, readbackblock);
 
 
 
    //uncomment below line if you want to see the entire 1k memory with the block written into it.
 
-   //mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+   mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
 
 }
 
@@ -217,9 +218,6 @@ int writeBlock(int blockNumber, byte arrayAddress[])
   Serial.println("block was written");
 
 }
-
-
-
 //Read specific block
 
 int readBlock(int blockNumber, byte arrayAddress[]) 
@@ -229,10 +227,6 @@ int readBlock(int blockNumber, byte arrayAddress[])
   int largestModulo4Number=blockNumber/4*4;
 
   int trailerBlock=largestModulo4Number+3;//determine trailer block for the sector
-
-
-
-  //authentication of the desired block for access
 
   byte status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(mfrc522.uid));
 
@@ -247,18 +241,9 @@ int readBlock(int blockNumber, byte arrayAddress[])
          return 3;//return "3" as error message
 
   }
-
-
-
 //reading a block
-
 byte buffersize = 18;//we need to define a variable with the read buffer size, since the MIFARE_Read method below needs a pointer to the variable that contains the size... 
-
-
-
 status = mfrc522.MIFARE_Read(blockNumber, arrayAddress, &buffersize);//&buffersize is a pointer to the buffersize variable; MIFARE_Read requires a pointer instead of just a number
-
-
 
   if (status != MFRC522::STATUS_OK) {
 
